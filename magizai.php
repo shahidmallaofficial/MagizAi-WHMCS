@@ -103,7 +103,7 @@ function magizai_output($vars)
     echo '<style>
         .mz-wrap{max-width:980px}
         .mz-head{display:flex;align-items:center;gap:14px;margin:4px 0 18px}
-        .mz-head img{border-radius:12px;flex-shrink:0}
+        .mz-head img{border-radius:12px;flex-shrink:0;border:1px solid #e3e3e3;background:#fff}
         .mz-title{font-size:20px;font-weight:700;line-height:1.2}
         .mz-sub{color:#666;font-size:12.5px;margin-top:2px}
         .mz-muted{color:#888}
