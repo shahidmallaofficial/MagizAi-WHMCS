@@ -25,7 +25,7 @@ function magizai_config()
     return array(
         'name' => 'MagizAI Live Chat',
         'description' => 'AI live chat that knows your WHMCS: answers from your knowledgebase and prices, and helps signed-in clients with their services, domains, invoices and tickets.',
-        'version' => '1.0.0',
+        'version' => '1.4.0',
         'author' => 'MagizAI',
         'language' => 'english',
         'fields' => array(),
@@ -71,6 +71,31 @@ function magizai_deactivate()
 function magizai_upgrade($vars)
 {
     Store::install();
+
+    $from = isset($vars['version']) ? (string) $vars['version'] : '0';
+
+    // 1.1.0 added the password reset action. Installs from before it keep their saved action list,
+    // so the new action is switched on for them explicitly; admins can still turn it off.
+    if (version_compare($from, '1.1.0', '<')) {
+        $enabled = Settings::enabledActions();
+        if (!in_array('password_reset_email', $enabled, true)) {
+            $enabled[] = 'password_reset_email';
+            Settings::set('enabled_actions', json_encode(array_values($enabled)));
+        }
+    }
+
+    // 1.3.0 added the Site Doctor ownership check, which MagizAI calls before it inspects a server
+    // for a client. Without it, site checks from chat are refused.
+    if (version_compare($from, '1.3.0', '<')) {
+        $enabled = Settings::enabledActions();
+        if (!in_array('hosting_accounts', $enabled, true)) {
+            $enabled[] = 'hosting_accounts';
+            Settings::set('enabled_actions', json_encode(array_values($enabled)));
+        }
+    }
+
+    // 1.4.0 added ordering from chat. Deliberately NOT switched on here: an upgrade must never
+    // start creating invoices for a host who has not read what it does and ticked it themselves.
 }
 
 /** Admin page. */

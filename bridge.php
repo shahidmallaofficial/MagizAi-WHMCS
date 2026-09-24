@@ -39,7 +39,7 @@ require_once __DIR__ . '/lib/autoload.php';
 
 const MAGIZAI_MAX_BODY = 65536;
 const MAGIZAI_CLOCK_SKEW = 300;
-const MAGIZAI_MODULE_VERSION = '1.0.0';
+const MAGIZAI_MODULE_VERSION = '1.4.0';
 
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
@@ -138,8 +138,14 @@ if (!Settings::isEnabled($action)) {
 
 // ---- identity ----------------------------------------------------------------------------------
 $clientId = null;
+$claims = array();
 
-if ($spec['identity']) {
+// 'optional' identity: verified when a token is sent, anonymous when none is. A token that IS sent
+// but does not verify is still refused below, never silently downgraded to anonymous.
+$identityGiven = is_array($request['identity'] ?? null) && !empty($request['identity']['token']);
+$needsIdentity = $spec['identity'] === true || ($spec['identity'] === 'optional' && $identityGiven);
+
+if ($needsIdentity) {
     $identity = is_array($request['identity'] ?? null) ? $request['identity'] : array();
     $claims = Crypto::verifyIdentity(Settings::get('identity_secret'), isset($identity['token']) ? $identity['token'] : null);
 
@@ -151,6 +157,7 @@ if ($spec['identity']) {
     }
 
     $clientId = (int) $claimed;
+    $claims = $claims ?: array();
 
     if ($spec['write']) {
         $freshness = max(5, (int) Settings::get('write_freshness_minutes', '60')) * 60;
@@ -175,7 +182,7 @@ if ($spec['identity']) {
 
 // ---- run ---------------------------------------------------------------------------------------
 try {
-    $result = Actions::run($action, $args, $clientId);
+    $result = Actions::run($action, $args, $clientId, is_array($claims) ? $claims : array());
 
     Store::audit($action, $spec['write'], $clientId, $conversation, 'ok', '', isset($result['audit']) ? $result['audit'] : null);
 

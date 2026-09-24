@@ -9,6 +9,7 @@ An AI live-chat assistant that knows your WHMCS.
 - look up their services, domains, invoices and tickets
 - tell them why a service is suspended and link the overdue invoice
 - read a domain's nameservers, expiry date, auto-renew and lock status
+- send a password reset email to the signed-in user's own address (and tell visitors who can't sign in how to reset it)
 - **change nameservers**, turn auto-renew on or off, open a ticket or reply to one — after the client confirms in chat with a one-time code
 - (off by default) submit a cancellation request, or email a domain transfer code to the address on the account
 
@@ -58,6 +59,80 @@ After that it syncs every night with the WHMCS daily cron. Only changed items ar
 
 ---
 
+## Your plans as cards in the chat (1.2.0)
+
+When a visitor asks which plan suits them, the assistant shows your real plans as cards: the price for the best-value term, what that works out to per month, the saving against paying monthly, the main features, and an **Order now** button that opens that term in your cart.
+
+It reads everything from WHMCS: product name and group, every billing term you have enabled, setup fees, stock, and the feature list from the product description. Hidden or retired products never appear. Features are taken from a bulleted list (`<li>`) or from one feature per line in the description, so a short, one-line-per-feature description gives the best cards.
+
+MagizAI refreshes the plans once a day and whenever you save the WHMCS connection. Change a price in WHMCS and the cards follow by the next morning.
+
+Upgrading from 1.1.0: upload the new files over the old ones. There are no settings to change.
+
+---
+
+## Site Doctor ownership check (1.3.0)
+
+If you use MagizAI's Site Doctor (the agent that finds out why a website is broken), the module answers one more question: **which hosting accounts does the signed-in client own?**
+
+MagizAI asks before it inspects anything. A client can only have their own websites checked, including addon domains and subdomains under their account. A domain on somebody else's account is refused, even when it sits on the same server.
+
+The answer holds only the domain, the system username, the server and the status of each account. No passwords, no usage, no billing. It is never shown to the assistant or to the client: it only decides yes or no.
+
+It appears as **Hosting accounts (Site Doctor ownership check)** in the actions tab and is on after the upgrade. Switch it off and site checks from chat stop.
+
+Upgrading from 1.2.0: upload the new files over the old ones, then open the module once so the upgrade runs.
+
+---
+
+## Ordering from the chat (1.4.0)
+
+A signed-in client can choose a plan, give a domain, and have the order placed there and then. The assistant reads back the exact plan, term, price and domain, the client confirms with a one-time code, and the module creates the order and its invoice in WHMCS and hands back your payment link.
+
+**The assistant never takes money.** No card details are asked for or handled in the chat. The client pays your invoice on your own website with your own gateway, exactly as they would from the cart.
+
+What the module checks before anything is created, every time:
+
+- the plan is one you sell **right now**, at the price WHMCS holds right now — never a price quoted earlier in the conversation;
+- a plan name that matches two products is a question back to the client, not a guess;
+- a domain being registered is actually free, so nobody is invoiced for a name somebody else owns;
+- a client who already owns their domain is not sold a registration they do not need;
+- the invoice is raised against a payment method you have switched on.
+
+The order is created exactly as the cart would create it, so your welcome emails, provisioning and automation run unchanged.
+
+It appears as **Place an order for a plan and domain** in the actions tab and is **off after the upgrade**: an upgrade must never start creating invoices for a host who has not read what it does. Switch it on there, then switch the matching skill on in MagizAI under Skills.
+
+Upgrading from 1.3.0: upload the new files over the old ones, then open the module once so the upgrade runs.
+
+---
+
+## Growing an account from the chat (1.4.0)
+
+Alongside ordering, a signed-in client can now do the things that used to need a ticket:
+
+| They ask | The assistant does |
+|---|---|
+| "what's the next plan up, and what would it cost?" | Lists the upgrades in the same product group with **WHMCS's own pro-rata figure** for changing today, and the new recurring price |
+| "move me to Business" | Places the upgrade (or downgrade) and gives them the invoice |
+| "I want to renew early" | Raises the renewal invoice for that service |
+| "renew my domain for 2 years" | Raises the domain renewal invoice |
+| "what extras can I add?" / "add a dedicated IP" | Lists the addons that apply to their plan, and adds the one they pick |
+| "I can't get into cPanel" | Resets the service password and **emails it** to the address on the account |
+| "where do I turn on two-factor?" | Links them straight to that page of the client area |
+
+Three rules hold across all of them:
+
+- **Prices always come from WHMCS at the moment the action runs.** An upgrade is priced, then priced again immediately before it is ordered, so the invoice can never disagree with the figure the client just agreed to.
+- **A renewal is refused when an unpaid invoice already covers it**, and the client is pointed at that invoice instead. Raising a second one is a client paying twice for the same month, and nothing in the chat looks wrong when it happens.
+- **A password is never shown in the chat.** It is generated on your server, set, and emailed to the address on the account — the same rule as the domain transfer code. A transcript is kept, is visible to every agent who opens it, and is still there a year later.
+
+Plan changes keep the client's existing billing term. A plan that is not sold on that term is not offered as an upgrade, because moving a monthly client onto a yearly plan is a twelve-fold invoice nobody mentioned.
+
+**Why there is no auto-login link.** WHMCS can mint a token that logs somebody straight into an account. It grants full access, skips two-factor, and anything put into a chat can be read by whoever is watching that chat. These actions only run for a client who is already signed in, so a plain link does the same job with none of that.
+
+---
+
 ## What the assistant may do
 
 The module's **What the assistant may do** tab has the final say. An action switched off there is refused, whatever MagizAI is set to do.
@@ -65,9 +140,9 @@ The module's **What the assistant may do** tab has the final say. An action swit
 | Group | Actions | Default |
 |---|---|---|
 | Public | knowledgebase search, announcements, network status, products and prices, domain availability, domain prices | on |
-| Signed-in client: look up | account overview, services, service details, domains, domain details, invoices, invoice details, tickets, ticket details | on |
+| Signed-in client: look up | account overview, services, service details, domains, domain details, invoices, invoice details, tickets, ticket details, upgrade options, extras for a service, client-area links, hosting accounts (Site Doctor) | on |
 | Signed-in client: change | change nameservers, turn auto-renew on/off, open a ticket, reply to a ticket | on in WHMCS, **off in MagizAI until you enable the skill** |
-| Sensitive | cancellation request, email the transfer code | **off** |
+| Sensitive | cancellation request, email the transfer code, place an order, upgrade or downgrade, renew a service, renew a domain, add an extra, reset a hosting password | **off** |
 
 ---
 
