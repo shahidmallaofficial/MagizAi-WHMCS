@@ -29,7 +29,7 @@ function magizai_config()
     return array(
         'name' => 'MagizAI Live Chat',
         'description' => 'AI live chat that knows your WHMCS: answers from your knowledgebase and prices, and helps signed-in clients with their services, domains, invoices and tickets.',
-        'version' => '1.10.0',
+        'version' => '1.10.1',
         'author' => 'MagizAI',
         'language' => 'english',
         'fields' => array(),

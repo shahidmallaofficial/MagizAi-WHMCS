@@ -43,34 +43,61 @@ We strongly recommend **WHMCS 8.13.7 (long-term support) or 9.0.8 or newer**. Ea
 3. Click **Configure**, tick the admin roles that may manage it, and save.
 4. Open **Addons → MagizAI Live Chat**.
 
-### 2. Put the chat on your client area
+### 2. Connect with a code
+
+One code sets up everything: the chat on your client area, signed-in clients, MagizAI's connection to WHMCS and the knowledge sync. Nobody copies keys between the two systems.
 
 In MagizAI:
 
-1. **Chatbots → your bot → Install**. Copy the `data-key` value from the embed code (it starts with `cv_`).
-2. On the same page, under **Signed visitor identity**, click **Generate secret**. It is shown once, so copy it now.
+1. Open **Connectors → WHMCS**. The page starts with **Connect with a code (recommended)**.
+2. Choose the bot under **Chatbot to connect** and press **Create a connection code**. The code starts with `mzp_`. It is shown once, works once and expires after 30 minutes, so copy it straight away.
 
-In WHMCS, on the module's **Setup** tab, paste the **Widget key** and **Identity secret**, then save.
+In WHMCS, on the module's **Setup** tab, the first card is **Fastest: connect with one code**:
+
+1. Paste the code into **Connection code**.
+2. Leave **MagizAI address** as `https://magiz.ai` unless you use a white-label address.
+3. Press **Connect**.
+
+The module sends MagizAI the code, your WHMCS System URL and this install's bridge secret (it makes one first if there is none). MagizAI keeps the address and the bridge secret on its side, and sends back the bot's widget key, its identity secret (the one it already has, so existing sign-ins keep working) and an API token for the knowledge sync. The module saves all three; the identity secret and the token are stored encrypted, like the bridge secret. MagizAI then calls this WHMCS once to test the connection, and the message you see says whether it got through.
+
+For the code to work:
+
+- **Your WHMCS System URL must start with `https://`** (System Settings, General Settings). MagizAI only talks to WHMCS over https.
+- **This server must be able to make outgoing https requests** to MagizAI, with PHP's cURL extension.
+- If the message says MagizAI could not reach this WHMCS yet, a firewall, WAF or Cloudflare rule is probably blocking unknown POST requests. Allow POST requests to `/modules/addons/magizai/bridge.php` (the full address is on the Setup tab), then press **Test connection** in MagizAI.
+
+A used or expired code changes nothing: create a new one and paste it again. Connecting again later with a new code is safe too: the module keeps its bridge secret and takes the bot's current keys and a new API token.
+
+### 3. Choose where the chat shows
+
+The module adds the chat to every client-area page. To show it only to signed-in clients, change **Show the chat** on the Setup tab and press **Save**.
 
 If you already pasted the MagizAI embed code into your WHMCS theme (or add it with a tag manager), either remove it and let the module add the widget, or keep it and set **Show the chat** to **I add the embed code myself**. Either way the module tells the assistant who is signed in. Do not choose **Nowhere** for a widget you embed yourself: Nowhere means the module adds nothing at all, so that widget treats every client as a guest.
 
-### 3. Let MagizAI talk to WHMCS
+### 4. Add the skills in MagizAI
 
-On the module's **Setup** tab you'll see a **WHMCS address** and a **Bridge secret**.
-
-In MagizAI go to **Connectors → WHMCS**, paste both values, then click **Save and test**. You should see "Connected to WHMCS 8.x (module 1.0.0)".
-
-Then click **Add WHMCS skills to the assistant**. This adds one skill for each thing the assistant can do:
+In MagizAI, on **Connectors → WHMCS**, press **Add WHMCS skills**. This adds one skill for each thing the assistant can do:
 
 - Answers and lookups go live straight away.
 - Account changes (nameservers, auto-renew, tickets, cancellations, transfer codes) are added **switched off**. Turn on the ones you want under **Skills**.
 
-### 4. Teach it your business (recommended)
+**Test connection** on the same page names your WHMCS and module versions and imports your plans for the chat.
 
-1. In MagizAI: **Settings → API tokens**. Create a token while signed in as the owner or an admin.
-2. In WHMCS, on the module's **Knowledge sync** tab, paste the token, choose what to sync, then click **Sync now**.
+### 5. Teach it your business (recommended)
+
+The code already saved an API token. On the module's **Knowledge sync** tab, choose what to sync, then click **Sync now**.
 
 After that it syncs every night with the WHMCS daily cron. Only changed items are sent, and anything you delete in WHMCS is removed from the assistant.
+
+### Without a code: enter the keys by hand
+
+Use this if the code cannot work for you, for example while your System URL is not on https yet, or if this server cannot reach MagizAI. The Setup and Knowledge sync tabs hold the same settings the code fills in.
+
+1. **The chat and signed-in clients.** In MagizAI open **Chatbots → your bot → Install**. Copy the `data-key` value from the embed code (it starts with `cv_`). On the same page, under **Signed visitor identity**, click **Generate secret**: it is shown once, so copy it now. In WHMCS, on the module's **Setup** tab, card **2. Chat widget and signed-in clients**, paste them into **Widget key** and **Identity secret**, then press **Save**.
+2. **MagizAI's connection to WHMCS.** Card **1. Connect MagizAI to this WHMCS** shows a **WHMCS address** and a **Bridge secret** (press **Show** to see all of it). In MagizAI go to **Connectors → WHMCS**, paste both into the form on that page, then press **Save and test**.
+3. **The knowledge sync.** In MagizAI open **Settings → API tokens** and create a token while signed in as the owner or an admin. Paste it on the module's **Knowledge sync** tab.
+
+Then carry on from step 3 above.
 
 ---
 
@@ -335,6 +362,8 @@ The module's **What the assistant may do** tab has the final say. An action swit
 | Signed-in client: change, off until ticked | send a welcome email or an invoice email again | **off** in WHMCS and in MagizAI |
 | Signed-in client: verification code (1.7.0) | email the client the 6-digit code they type in the chat to see a service password there (in 1.7.0 also to confirm a change) | **on**, switched on the Setup tab (**Send chat verification codes by email**), not on this tab |
 | Sensitive | cancellation request, email the transfer code, place an order, upgrade or downgrade, renew a service, renew a domain, add an extra, reset a hosting password, open an account for a new client (1.8.0), change a domain's contact details, pay an invoice from the account credit, run a server command you list (1.10.0) | **off** |
+
+**Saving the tab** (1.10.1). After **Save**, the module reads the list back from WHMCS's database and says what changed: which actions were switched on, which off, and how many are on. If what WHMCS stored is not what you ticked, a red message names the actions it did not keep. A box that did not reach WHMCS with the save is left as it was and named in a red message too. MagizAI's connection check receives the last save (`actions_last_save`: action names and counts only).
 
 **After an update.** A new look-up action is switched on for you, however you update: by uploading over the old files (MagizAI's next request does it, even if nobody opens the admin page) or by deactivating, uploading and activating. Anything that changes an account or raises an invoice stays off until you tick it, and an action you switched off stays off.
 

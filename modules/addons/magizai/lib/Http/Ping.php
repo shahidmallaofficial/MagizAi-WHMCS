@@ -2,6 +2,7 @@
 
 namespace MagizAI\Whmcs\Http;
 
+use MagizAI\Whmcs\Admin\ActionsSave;
 use MagizAI\Whmcs\Crypto;
 use MagizAI\Whmcs\Identity\Signing;
 use MagizAI\Whmcs\Identity\Telemetry;
@@ -114,6 +115,9 @@ class Ping
             // 1.10.0: the last ticket event sent to MagizAI and what came back, so a push that never
             // arrives can be seen from MagizAI too. @see TicketEvents::report
             'ticket_events_health' => TicketEvents::report(),
+            // 1.10.1: the last save of the "What the assistant may do" tab: which boxes arrived, what
+            // was asked and whether WHMCS kept it. Action names and counts only. @see ActionsSave::report
+            'actions_last_save' => ActionsSave::report(),
         );
     }
 

@@ -3,6 +3,7 @@
 namespace MagizAI\Whmcs\Admin\Tabs;
 
 use MagizAI\Whmcs\Action\Registry;
+use MagizAI\Whmcs\Admin\ActionsSave;
 use MagizAI\Whmcs\Admin\View;
 use MagizAI\Whmcs\Domain\ModuleCommands;
 use MagizAI\Whmcs\Settings;
@@ -27,7 +28,12 @@ class ActionsTab
             'write' => 'Signed-in client: change their own account (always confirmed by the client in the chat first)',
             'sensitive' => 'Sensitive: off by default',
         );
-        $body = '';
+        /*
+         * 1.10.1: each box is a field of its own, a hidden 0 and then the checkbox's 1 under one name
+         * (PHP keeps the last), so a box whose field never reaches WHMCS is told apart from one left
+         * unticked. The first field says the page posts this way. @see ActionsSave
+         */
+        $body = '<input type="hidden" name="' . ActionsSave::FORM . '" value="' . count(ActionsSave::choosable()) . '">';
         foreach ($groups as $group => $title) {
             $body .= '<div class="mz-grp">' . $e($title) . '</div>';
             if ($group === 'sensitive') {
@@ -51,7 +57,8 @@ class ActionsTab
                     $body .= '<div class="mz-help">' . $e($spec['label']) . ': on with "' . $e($leader ? $leader['label'] : Registry::FOLLOWS[$key]) . '".</div>';
                     continue;
                 }
-                $body .= '<div><label><input type="checkbox" name="actions[]" value="' . $e($key) . '"' . (in_array($key, $enabled, true) ? ' checked' : '') . '> ' . $e($spec['label']) . '</label></div>';
+                $field = $e(ActionsSave::FIELD . $key);
+                $body .= '<div><input type="hidden" name="' . $field . '" value="0"><label><input type="checkbox" name="' . $field . '" value="1"' . (in_array($key, $enabled, true) ? ' checked' : '') . '> ' . $e($spec['label']) . '</label></div>';
             }
         }
         echo '<div class="mz-card"><h3>What the assistant may do</h3><p class="mz-help">This is the final say: an action switched off here is refused whatever is configured in MagizAI. Every request is recorded in the activity log, and changes also appear in the WHMCS activity log.</p>'

@@ -2,7 +2,6 @@
 
 namespace MagizAI\Whmcs\Admin;
 
-use MagizAI\Whmcs\Action\Registry;
 use MagizAI\Whmcs\Crypto;
 use MagizAI\Whmcs\Domain\ModuleCommands;
 use MagizAI\Whmcs\Http\TicketEvents;
@@ -156,12 +155,9 @@ class PostHandler
         }
 
         if ($do === 'save_actions') {
-            $chosen = isset($_POST['actions']) && is_array($_POST['actions']) ? $_POST['actions'] : array();
-            // An action a Setup tab setting switches is never part of the list. @see Registry::SETTING_SWITCHES
-            $valid = array_values(array_diff(array_intersect(array_keys(Registry::catalog()), $chosen), array_keys(Registry::SETTING_SWITCHES), array_keys(Registry::FOLLOWS)));
-            Settings::set('enabled_actions', json_encode($valid));
-
-            return count($valid) . ' action(s) enabled.';
+            // 1.10.1: one field per action, read back after the write, and the save noted for MagizAI.
+            // An action a Setup tab setting switches is never part of the list. @see ActionsSave
+            return ActionsSave::save();
         }
 
         if ($do === 'save_module_commands') {

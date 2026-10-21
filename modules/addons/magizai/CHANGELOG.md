@@ -18,6 +18,35 @@ It can still use a sign-in it was given until that sign-in expires. Either way, 
 
 ---
 
+## 1.10.1
+
+Upload the new files over the old ones, then open **Addons → MagizAI Live Chat** once. Nothing is
+switched on or off by the update, and your action choices are kept.
+
+### Saving the actions you tick
+
+- **Fixed: boxes ticked on "What the assistant may do" could come back unticked.** On some installs
+  the page said "NN action(s) enabled." after Save, but the boxes just ticked never reached the module,
+  so they were not stored. The tab posted them as one shared list; each action now posts a field of its
+  own, and the module reads every action by its name.
+- **The message says exactly what changed**, read back from WHMCS's database after the save, for
+  example: Switched on: "Close a support ticket", "Turn the domain registrar lock on/off". Switched
+  off: none. 41 actions are on.
+- **A red message when something did not save.** If what WHMCS stored is not what you ticked, the page
+  says so and names the actions ("Ticked but still off", "Unticked but still on") instead of a success
+  message. If a box never reached WHMCS with the save, it is left as it was and named too.
+- **MagizAI can see the last save.** The connection check now receives what the last save asked for
+  and whether WHMCS kept it (`actions_last_save` in the ping): action names and counts only, never a
+  secret. If a box still does not save on your install, MagizAI support can see what reached WHMCS.
+- A page that was already open before the update still saves as before.
+
+### Setup
+
+- The install guide in the README now starts with **Connect with a code**, as the Setup tab does, and
+  keeps entering the keys by hand as the fallback.
+
+---
+
 ## 1.10.0
 
 Upload the new files over the old ones, then open **Addons → MagizAI Live Chat** once. The four new

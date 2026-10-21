@@ -5,13 +5,13 @@ chat assistant then answers from your knowledgebase, announcements, network stat
 domain prices, and for clients signed in to the client area it can look up their services, domains,
 invoices and tickets, and make the changes you allow after the client taps Confirm in the chat.
 
-**Current version: 1.10.0**
+**Current version: 1.10.1**
 
 ## Download
 
 - The newest release: [Releases](https://github.com/shahidmallaofficial/MagizAi-WHMCS/releases/latest),
   as a zip with its SHA-256 checksum. It is the same file as
-  `https://magiz.ai/downloads/whmcs/magizai-1.10.0.zip`.
+  `https://magiz.ai/downloads/whmcs/magizai-1.10.1.zip`.
 - `https://magiz.ai/whmcs/latest.json` always names the newest version, its download and checksum.
 
 ## Install

@@ -40,7 +40,7 @@ if (function_exists('ini_set')) {
     ini_set('display_errors', '0');
 }
 
-const MAGIZAI_MODULE_VERSION = '1.10.0';
+const MAGIZAI_MODULE_VERSION = '1.10.1';
 
 $magizaiGuard = new OutputGuard($magizaiBufferBase);
 $magizaiReply = (new BridgeKernel($magizaiGuard, MAGIZAI_MODULE_VERSION))->handle(BridgeRequest::fromGlobals());
