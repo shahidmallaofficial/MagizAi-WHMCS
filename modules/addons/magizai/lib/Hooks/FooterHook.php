@@ -36,6 +36,12 @@ class FooterHook
             return '';
         }
 
+        if (PageSettings::hideOnPage($vars)) {
+            // The admin hid the chat on this page (e.g. the login or sign-up page): add nothing, not
+            // even the sign-in token, exactly as "Nowhere" does for the whole install.
+            return '';
+        }
+
         $placement = PageSettings::placement();
         // With "self" the merchant embeds the widget, so the module adds only the sign-in.
         $withWidget = $placement !== 'self';

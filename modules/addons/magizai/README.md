@@ -74,6 +74,8 @@ The module adds the chat to every client-area page. To show it only to signed-in
 
 If you already pasted the MagizAI embed code into your WHMCS theme (or add it with a tag manager), either remove it and let the module add the widget, or keep it and set **Show the chat** to **I add the embed code myself**. Either way the module tells the assistant who is signed in. Do not choose **Nowhere** for a widget you embed yourself: Nowhere means the module adds nothing at all, so that widget treats every client as a guest.
 
+**Hide the chat on chosen pages (1.11.0).** On the Setup tab, under "Chat widget and signed-in clients", tick the pages to leave the chat off — **Login**, **Sign-up / registration**, **Password reset**, **Cart / order / checkout** — and add any others by their template name (like `login`) or by any part of the page address (like `/announcements`), one per line. On a hidden page the module adds **nothing at all**: not the chat, and not the sign-in token a page normally carries, so a page with no chat never leaves a token behind either. Leave it blank to show the chat on every page the **Show the chat** setting allows, exactly as before.
+
 ### 4. Add the skills in MagizAI
 
 In MagizAI, on **Connectors → WHMCS**, press **Add WHMCS skills**. This adds one skill for each thing the assistant can do:

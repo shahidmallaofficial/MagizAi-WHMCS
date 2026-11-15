@@ -83,6 +83,12 @@ class SetupTab
                 . 'If MagizAI\'s embed code is in your theme, choose "I add the embed code myself" below: your widget then knows which client is signed in.</div>'
             : '';
 
+        $hiddenPages = PageSettings::hiddenPages();
+        $hiddenChecked = function ($token) use ($hiddenPages) {
+            return in_array($token, $hiddenPages, true) ? ' checked' : '';
+        };
+        $hiddenCustom = implode("\n", array_values(array_diff($hiddenPages, PageSettings::KNOWN_PAGES)));
+
         echo '<div class="mz-card"><h3>2. Chat widget and signed-in clients</h3>' . $placementNotice
             . $form('save_setup',
                 '<div class="mz-row"><label>MagizAI address</label><input type="text" class="form-control" name="magizai_url" value="' . $e($s['magizai_url']) . '"><p class="mz-help">Leave as https://magiz.ai unless you use a white-label address.</p></div>'
@@ -97,6 +103,13 @@ class SetupTab
                 ), PageSettings::placement())
                 . '</select><p class="mz-help">Choose "I add the embed code myself" if MagizAI\'s embed code is in your theme or added by a tag manager: '
                 . 'the module then adds only what tells the chat who is signed in. "Nowhere" adds nothing at all, so a widget you embed yourself treats every client as a guest.</p></div>'
+                . '<div class="mz-row"><label>Hide the chat on these pages</label>'
+                . '<label style="display:inline-block;margin-right:14px;font-weight:normal"><input type="checkbox" name="hide_page[]" value="login"' . $hiddenChecked('login') . '> Login</label>'
+                . '<label style="display:inline-block;margin-right:14px;font-weight:normal"><input type="checkbox" name="hide_page[]" value="register"' . $hiddenChecked('register') . '> Sign-up / registration</label>'
+                . '<label style="display:inline-block;margin-right:14px;font-weight:normal"><input type="checkbox" name="hide_page[]" value="pwreset"' . $hiddenChecked('pwreset') . '> Password reset</label>'
+                . '<label style="display:inline-block;margin-right:14px;font-weight:normal"><input type="checkbox" name="hide_page[]" value="cart"' . $hiddenChecked('cart') . '> Cart / order / checkout</label>'
+                . '<textarea class="form-control" name="widget_hidden_pages_custom" rows="3" style="margin-top:8px" placeholder="One per line, e.g. announcements or /knowledgebase">' . $e($hiddenCustom) . '</textarea>'
+                . '<p class="mz-help">The chat, and the sign-in it carries, is left off these pages completely. Tick the common ones above, and add any others by their template name (like <code>login</code>) or by any part of the page address (like <code>/announcements</code>), one per line. Leave all blank to show the chat everywhere the setting above allows.</p></div>'
                 . '<div class="mz-row"><label>Default ticket department</label><select name="ticket_department_id" class="form-control">' . View::departmentOptions($s['ticket_department_id']) . '</select><p class="mz-help">Used when the client does not say which department a ticket is for.</p></div>'
                 . '<div class="mz-row"><label>Identity token lifetime (minutes)</label><input type="text" class="form-control" name="identity_ttl_minutes" value="' . $e(PageSettings::ttlMinutes()) . '" style="max-width:120px"><p class="mz-help">How long one sign-in token for the chat lasts, from 5 to 240 minutes. The chat asks this module for a fresh one before it runs out, for as long as the client is still signed in, so a short lifetime costs the client nothing. New installs start at 15.</p></div>'
                 . '<div class="mz-row"><label>Staff view</label><select name="staff_mode" class="form-control">'

@@ -6,6 +6,7 @@ use MagizAI\Whmcs\Crypto;
 use MagizAI\Whmcs\Domain\ModuleCommands;
 use MagizAI\Whmcs\Http\TicketEvents;
 use MagizAI\Whmcs\Pairing;
+use MagizAI\Whmcs\Identity\PageSettings;
 use MagizAI\Whmcs\Identity\Signing;
 use MagizAI\Whmcs\Install\EmailTemplate;
 use MagizAI\Whmcs\Persistence\KeptSettings;
@@ -41,6 +42,21 @@ class PostHandler
             Settings::set('magizai_url', $url !== '' ? rtrim($url, '/') : 'https://magiz.ai');
             Settings::set('widget_key', $key);
             Settings::set('widget_placement', in_array($_POST['widget_placement'] ?? '', array('all', 'loggedin', 'self', 'off'), true) ? $_POST['widget_placement'] : 'all');
+            // Pages to hide the chat on: the ticked common pages, plus anything the admin typed (a
+            // template name or any part of a page address). Stored as one comma list. @see PageSettings::hideOnPage
+            $hidePages = array();
+            foreach ((array) ($_POST['hide_page'] ?? array()) as $page) {
+                if (in_array($page, PageSettings::KNOWN_PAGES, true) && !in_array($page, $hidePages, true)) {
+                    $hidePages[] = $page;
+                }
+            }
+            foreach (preg_split('/[,\r\n]+/', (string) ($_POST['widget_hidden_pages_custom'] ?? '')) as $token) {
+                $token = preg_replace('/[^a-z0-9_.\/-]/', '', strtolower(trim((string) $token)));
+                if ($token !== '' && !in_array($token, $hidePages, true)) {
+                    $hidePages[] = $token;
+                }
+            }
+            Settings::set('widget_hidden_pages', implode(',', $hidePages));
             // Staff view is on only when chosen here, every time the form is saved.
             Settings::set('staff_mode', ($_POST['staff_mode'] ?? '') === 'read_only' ? 'read_only' : 'off');
             $signing = ($_POST['identity_signing'] ?? '') === 'hs256' ? 'hs256' : 'auto';

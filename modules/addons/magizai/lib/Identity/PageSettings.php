@@ -47,6 +47,70 @@ class PageSettings
         return in_array($placement, array('all', 'loggedin', 'self', 'off'), true) ? $placement : 'all';
     }
 
+    /**
+     * The common client-area pages the admin can tick to hide the chat on, each stored as its WHMCS
+     * template name. The admin page shows these as checkboxes; anything else the admin types (a
+     * template name, or any part of a page address) is kept alongside them. @see hiddenPages
+     */
+    const KNOWN_PAGES = array('login', 'register', 'pwreset', 'cart');
+
+    /**
+     * Pages the admin chose NOT to show the chat on. Lower-cased tokens, from `widget_hidden_pages`
+     * (comma or newline separated). A token is either a WHMCS template name (e.g. "login") or any
+     * part of the page's web address (e.g. "/announcements"). @see hideOnPage
+     *
+     * @return string[]
+     */
+    public static function hiddenPages()
+    {
+        $raw = (string) Settings::get('widget_hidden_pages', '');
+        $out = array();
+        foreach (preg_split('/[,\r\n]+/', $raw) as $token) {
+            $token = strtolower(trim((string) $token));
+            if ($token !== '' && !in_array($token, $out, true)) {
+                $out[] = $token;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Should the module add NOTHING to this client-area page, because the admin hid the chat on it?
+     * When true the footer adds neither the widget nor the sign-in token: a page with no chat should
+     * not carry a bearer token either. @see \MagizAI\Whmcs\Hooks\FooterHook::run
+     *
+     * A token matches when it equals the page's WHMCS template name, or appears anywhere in the page's
+     * web address (so "cart" catches the whole order flow under cart.php, and a merchant can hide any
+     * other page by a fragment of its address). The template name comes from WHMCS's own
+     * `$templatefile`, with the request address as the fallback.
+     */
+    public static function hideOnPage(array $vars = array())
+    {
+        $hidden = self::hiddenPages();
+        if (!$hidden) {
+            return false;
+        }
+
+        $template = (string) (isset($vars['templatefile']) ? $vars['templatefile'] : '');
+        if ($template === '' && isset($GLOBALS['templatefile'])) {
+            $template = (string) $GLOBALS['templatefile'];
+        }
+        $template = strtolower(trim($template));
+        $uri = strtolower((string) (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : ''));
+
+        foreach ($hidden as $token) {
+            if ($template !== '' && $token === $template) {
+                return true;
+            }
+            if ($uri !== '' && strpos($uri, $token) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** Staff view: off | read_only. Anything else is off. */
     public static function staffMode()
     {

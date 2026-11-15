@@ -18,6 +18,21 @@ It can still use a sign-in it was given until that sign-in expires. Either way, 
 
 ---
 
+## 1.11.0
+
+Upload the new files over the old ones, then open **Addons → MagizAI Live Chat** once. Nothing is
+switched on or off by the update, and your settings and action choices are kept.
+
+### Hide the chat on chosen pages
+
+- **New: choose pages where the chat should not appear.** On the Setup tab, under "Chat widget and
+  signed-in clients", tick the common pages to leave the chat off — **Login**, **Sign-up /
+  registration**, **Password reset**, **Cart / order / checkout** — and add any others by their
+  template name (like `login`) or by any part of the page address (like `/announcements`), one per
+  line. On a hidden page the module adds **nothing at all**: not the chat, and not the sign-in token a
+  page normally carries, so a page with no chat never leaves a token behind either. Leave it blank to
+  show the chat on every page the placement setting allows, exactly as before.
+
 ## 1.10.1
 
 Upload the new files over the old ones, then open **Addons → MagizAI Live Chat** once. Nothing is

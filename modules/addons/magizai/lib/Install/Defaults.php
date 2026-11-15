@@ -28,6 +28,13 @@ class Defaults
              */
             'widget_placement' => 'all',
             /*
+             * Client-area pages the chat is hidden on, even when placement is "all" or "loggedin":
+             * a comma/newline list of WHMCS template names (e.g. "login,register") or any part of a
+             * page address (e.g. "/announcements"). Empty = shown everywhere placement allows.
+             * @see Identity\PageSettings::hideOnPage
+             */
+            'widget_hidden_pages' => '',
+            /*
              * How long one identity token lives. 15 for a NEW install: the chat now asks the module
              * for a fresh token before one runs out (Http\TokenEndpoint), so a short life costs a
              * client nothing. Installs from before keep what they run with (the 1.6.0 upgrade step

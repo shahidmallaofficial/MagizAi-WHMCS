@@ -53,6 +53,8 @@ class Ping
         'ticket_events_health', 'ticket_events_test',
         // 1.10.0: the inbox can set a ticket's priority and department (Staff\TicketUpdate).
         'ticket_update',
+        // 1.11.0: the admin can hide the chat on chosen client-area pages (login, sign-up, etc.).
+        'page_hiding',
     );
 
     /**
@@ -99,6 +101,8 @@ class Ping
             // Equal to MagizAI's own fingerprint of its secret exactly when the two secrets are equal.
             'identity_fp' => Crypto::fingerprint($secret),
             'placement' => $placement,
+            // 1.11.0: client-area pages the admin hid the chat on (template names or address fragments).
+            'hidden_pages' => PageSettings::hiddenPages(),
             'staff_mode' => PageSettings::staffMode(),
             // Whether index.php?m=magizai&action=identity hands out sign-ins: exactly when the pages
             // carry one. @see PageSettings::onPages
